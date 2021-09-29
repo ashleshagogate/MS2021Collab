@@ -101,6 +101,35 @@ GCcontent<-round(GCcontent, digits = 1)
 boxplot(pmsLog2[,2]~GCcontent)
 boxplot(data.matrix[,2]~GCcontent)
 
+#limma
+groups = ph@data$sample
+f<- factor(groups,levels=c("HEK293","HEK293T","H9"))
+design = model.matrix(~ 0 + f)
+colnames(design) = c("HEK293","HEK293T","H9")
+data.fit = lmFit(data.matrix,design)
+data.fit$coefficients[1:10,]
+contrast.matrix = makeContrasts(HEK293T-H9,levels=design)
+data.fit.con = contrasts.fit(data.fit,contrast.matrix)
+data.fit.eb = eBayes(data.fit.con)
+names(data.fit.eb)
+data.fit.eb$coefficients[1:10,]
+r<-rownames(data.fit.eb)
+df1<-as.data.frame(data.fit.eb, row.names=r)
+df<-topTable(data.fit.eb, n=Inf)
+up<-subset(df,(df$logFC>1&df$P.Value<0.05))
+down<-subset(df,(df$logFC<(-1)&df$P.Value<0.05))
+df$status<-"none"
+df$status[df$logFC>1&df$P.Value<0.05]<-"up"
+df$status[df$logFC<(-1)&df$P.Value<0.05]<-"down"
+mycolors=c("blue","black","red")
+names(mycolors)=c("down","none","up")
+plot<- ggplot(data=df, aes(x=logFC, y=-log10(P.Value), col=status)) +
+  geom_point() + 
+  theme_minimal() +
+  scale_color_manual(values=mycolors) +
+  geom_vline(xintercept=c(-1, 1), col="red") +
+  geom_hline(yintercept=-log10(0.05), col="red")
+plot
 
 
 

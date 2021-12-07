@@ -131,7 +131,11 @@ plot<- ggplot(data=df, aes(x=logFC, y=-log10(P.Value), col=status)) +
   geom_hline(yintercept=-log10(0.05), col="red")
 plot
 
-
+#Getting probe annotations from a database
+library(huex10sttranscriptcluster.db)
+library(annotate)
+results<-select(huex10sttranscriptcluster.db, probes, c("SYMBOL","ENTREZID", "GENENAME"))
+write.csv(results, file="AnnotationForAllCellLines.csv")
 
 
 
